@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Flask/App runtime directories
+webapp/uploads/*
+webapp/runtime/*
+webapp/static/__pycache__/
+!webapp/uploads/.gitkeep
+!webapp/runtime/.gitkeep
+
+# Local compression output
+Huffman/huffman_compression/compressed_files/*
+Huffman/huffman_decompression/decompressed_files/*
+LZW/lzw_compression/compressed_files/*
+LZW/lzw_decompression/decompressed_files/*
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/

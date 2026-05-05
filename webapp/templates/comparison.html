@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Algorithm Comparison</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="comparison-body">
+  <div class="comparison-shell">
+    <header class="workspace-header comparison-header">
+      <div>
+        <a class="back-link" href="{{ url_for('workspace_page') }}">Back to Workspace</a>
+        <h1>Algorithm Comparison Dashboard</h1>
+        <p>Review the same source file through both algorithms using graphs, ranked metrics, and a formal comparison table.</p>
+      </div>
+    </header>
+
+    <main id="comparison-root" class="comparison-root">
+      <div class="workspace-card">
+        <p>Loading comparison data...</p>
+      </div>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='comparison.js') }}"></script>
+</body>
+</html>

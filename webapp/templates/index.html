@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compression Studio</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="landing-body">
+  <div class="page-shell">
+    <header class="top-nav">
+      <div class="brand-mark">
+        <span class="brand-orb"></span>
+        <span class="brand-name">Compression Studio</span>
+      </div>
+      <nav class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#algorithms">Algorithms</a>
+        <a href="#workflow">Workflow</a>
+        <a href="{{ url_for('workspace_page') }}" class="nav-cta">Open Workspace</a>
+      </nav>
+    </header>
+
+    <main class="hero-panel">
+      <div class="hero-glow hero-glow-left"></div>
+      <div class="hero-glow hero-glow-right"></div>
+      <div class="hero-grid">
+        <section class="hero-copy">
+          <div class="eyebrow-pill">Information Theory Project Platform</div>
+          <h1>One workspace for precise compression, decompression, and algorithm comparison.</h1>
+          <p>
+            Explore LZW and Huffman through a polished interface that turns raw project requirements
+            into a guided workflow for file processing, analysis, and visual comparison.
+          </p>
+          <div class="hero-actions">
+            <a class="primary-button" href="{{ url_for('workspace_page') }}">Launch Workspace</a>
+            <a class="secondary-button" href="#overview">Discover More</a>
+          </div>
+        </section>
+
+        <section class="hero-side">
+          <div class="signal-card signal-card-top">
+            <span class="signal-label">Compression</span>
+            <strong>Reduced size, preserved meaning.</strong>
+          </div>
+          <div class="signal-card signal-card-mid">
+            <span class="signal-label">Decompression</span>
+            <strong>Restore files with algorithm-aware decoding.</strong>
+          </div>
+          <div class="signal-card signal-card-bottom">
+            <span class="signal-label">Insights</span>
+            <strong>Ratios, timing, entropy, memory, and graphs in one view.</strong>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <section id="overview" class="content-band">
+      <div class="section-heading">
+        <span>Core Concepts</span>
+        <h2>Compression and decompression, presented with clarity.</h2>
+      </div>
+      <div class="card-grid three-up">
+        <article class="info-card">
+          <h3>Compression</h3>
+          <p>Compression reduces the space required to store or transmit data by representing the same information more efficiently.</p>
+        </article>
+        <article class="info-card">
+          <h3>Decompression</h3>
+          <p>Decompression restores the original file from its compressed representation so the content can be used exactly as before.</p>
+        </article>
+        <article class="info-card">
+          <h3>Where it matters</h3>
+          <p>Compression is used in document archiving, media transfer, storage optimization, communication systems, and analytical pipelines.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="algorithms" class="content-band">
+      <div class="section-heading">
+        <span>Algorithms</span>
+        <h2>Two lossless methods, each with a distinct behavior profile.</h2>
+      </div>
+      <div class="card-grid two-up">
+        <article class="algorithm-card">
+          <div class="algorithm-badge">LZW</div>
+          <h3>Dictionary-based compression</h3>
+          <p>LZW builds a dictionary dynamically while scanning the file. Repeated patterns are replaced with compact codes, which makes it especially effective for recurring structures.</p>
+        </article>
+        <article class="algorithm-card">
+          <div class="algorithm-badge">Huffman</div>
+          <h3>Frequency-based coding</h3>
+          <p>Huffman assigns shorter binary codes to more frequent symbols and longer codes to rarer ones, producing an efficient variable-length representation of the original data.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="workflow" class="content-band">
+      <div class="section-heading">
+        <span>Workflow</span>
+        <h2>The project flow is organized around three decisive stages.</h2>
+      </div>
+      <div class="timeline-grid">
+        <article class="timeline-card">
+          <span class="timeline-number">01</span>
+          <h3>Process a file</h3>
+          <p>Select a file, choose compression or decompression, define the file type, and run the desired algorithm.</p>
+        </article>
+        <article class="timeline-card">
+          <span class="timeline-number">02</span>
+          <h3>Inspect metrics</h3>
+          <p>Review entropy, ratio, speed, memory usage, output paths, and structural efficiency directly inside the workspace.</p>
+        </article>
+        <article class="timeline-card">
+          <span class="timeline-number">03</span>
+          <h3>Compare algorithms</h3>
+          <p>Move into a dedicated comparison surface with charts and tables generated from the same source file for fair analysis.</p>
+        </article>
+      </div>
+    </section>
+
+    <footer class="landing-footer">
+      <span>Built for the Information Theory and Data Compression project workflow.</span>
+      <a href="{{ url_for('workspace_page') }}">Enter the main workspace</a>
+    </footer>
+  </div>
+</body>
+</html>

@@ -1,0 +1,43 @@
+try:
+    from .bitmap_file import decompress_bitmap_file
+    from .text_decompression import decompress_text_file
+except ImportError:
+    from bitmap_file import decompress_bitmap_file
+    from text_decompression import decompress_text_file
+
+
+def decompress_file(file_path, file_type):
+    if file_type == "text":
+        return decompress_text_file(file_path, "text_document")
+
+    if file_type == "repetitive":
+        return decompress_text_file(file_path, "highly_repetitive_data_file")
+
+    if file_type == "bitmap":
+        return decompress_bitmap_file(file_path)
+
+    raise ValueError("file_type must be: text, repetitive, or bitmap")
+
+
+def print_result(result):
+    print("\nFile Type:")
+    print(result["file_type"])
+
+    print("\nStatistics:")
+    for key, value in result["stats"].items():
+        print(f"{key}: {value}")
+
+    print("\nData Structure Efficiency:")
+    for key, value in result["data_structure_efficiency"].items():
+        print(f"{key}: {value}")
+
+    print("\nDecompressed File Path:")
+    print(result["decompressed_file_path"])
+
+
+if __name__ == "__main__":
+    file_path = input("Enter compressed file path: ").strip()
+    file_type = input("Enter file type (text / repetitive / bitmap): ").strip().lower()
+
+    result = decompress_file(file_path, file_type)
+    print_result(result)

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compression Workspace v2</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="app-body">
+  <div class="app-shell">
+    <header class="workspace-header">
+      <div>
+        <a class="back-link" href="{{ url_for('landing_page') }}">Compression Studio</a>
+        <h1>Compression & Decompression Workspace</h1>
+        <p>Upload a file, choose an algorithm, run the operation, then inspect detailed metrics and a generated comparison.</p>
+      </div>
+      <a href="{{ url_for('landing_page') }}" class="secondary-button compact">Back to Landing</a>
+    </header>
+
+    <main class="workspace-grid">
+      <section class="workspace-card form-card">
+        <div class="card-header">
+          <span class="mini-label">Execution Control</span>
+          <h2>Run a file operation</h2>
+        </div>
+
+        <form id="process-form" class="process-form">
+          <label class="input-block">
+            <span>Operation</span>
+            <div class="segment-row">
+              <label class="segment-option">
+                <input type="radio" name="operation" value="compress" checked>
+                <span>Compression</span>
+              </label>
+              <label class="segment-option">
+                <input type="radio" name="operation" value="decompress">
+                <span>Decompression</span>
+              </label>
+            </div>
+          </label>
+
+          <label class="input-block">
+            <span>Algorithm</span>
+            <select name="algorithm">
+              <option value="lzw">LZW</option>
+              <option value="huffman">Huffman</option>
+            </select>
+          </label>
+
+          <label class="input-block">
+            <span>File Type</span>
+            <select name="file_type">
+              <option value="text">Text Document</option>
+              <option value="repetitive">Highly Repetitive Data</option>
+              <option value="bitmap">Bitmap Image</option>
+            </select>
+          </label>
+
+          <label class="upload-zone" for="file-input">
+            <input id="file-input" type="file" name="file" required>
+            <span class="upload-title">Select a source file</span>
+            <span class="upload-subtitle">Supported by your project flow: text, repetitive text, and bitmap files.</span>
+            <span id="file-name" class="upload-file-name">No file selected</span>
+          </label>
+
+          <button type="submit" class="primary-button wide-button">Process File</button>
+        </form>
+      </section>
+
+      <section class="workspace-card result-card">
+        <div class="card-header">
+          <span class="mini-label">Live Result</span>
+          <h2>Operation output</h2>
+        </div>
+
+        <div id="result-empty" class="empty-state">
+          <p>Run an operation to display output details, key metrics, download links, and the generated comparison entry.</p>
+        </div>
+
+        <div id="result-content" class="result-content hidden">
+          <div class="result-topline">
+            <div>
+              <span class="result-label">Algorithm</span>
+              <strong id="result-algorithm"></strong>
+            </div>
+            <div>
+              <span class="result-label">Operation</span>
+              <strong id="result-operation"></strong>
+            </div>
+          </div>
+
+          <div class="metric-grid" id="metric-grid"></div>
+
+          <div class="detail-panel">
+            <h3>Data Structure Efficiency</h3>
+            <div id="efficiency-list" class="key-value-list"></div>
+          </div>
+
+          <div class="detail-panel">
+            <h3>Output File</h3>
+            <div id="download-area" class="download-area"></div>
+          </div>
+
+          <div class="comparison-panel">
+            <div>
+              <span class="mini-label">Comparison Ready</span>
+              <h3>Open side-by-side analysis</h3>
+              <p>The alternative algorithm is processed automatically in the background using the same source context.</p>
+            </div>
+            <a id="comparison-link" class="primary-button compact" href="#">View Comparison</a>
+          </div>
+
+          <!-- File Content Preview Panel (Integrated into Dashboard) -->
+          <div id="preview-panel" class="detail-panel">
+            <div class="card-header" style="margin-bottom: 12px;">
+              <span class="mini-label">Content Preview</span>
+              <h3 id="preview-title">Generated File Content</h3>
+            </div>
+            <pre id="file-content-display" class="file-preview-area" style="max-height: 400px; font-size: 13px;"></pre>
+          </div>
+
+          <!-- Bonus Section: Noisy Channel Simulation -->
+          <div id="bonus-section" class="detail-panel hidden">
+            <div class="card-header">
+              <span class="mini-label">Bonus Feature</span>
+              <h3>Channel Noise & ECC Simulation</h3>
+              <p>Test the resilience of your compressed file against bit-flips using Hamming(7,4) Error Correction.</p>
+            </div>
+            <div class="channel-controls">
+              <label class="input-block">
+                <span>Error Probability (BSC)</span>
+                <input type="range" id="error-prob-slider" min="0" max="0.05" step="0.001" value="0.01">
+                <span id="error-prob-value">1% (0.01)</span>
+              </label>
+              <button id="simulate-channel-btn" class="secondary-button compact wide-button">Simulate Noisy Channel</button>
+            </div>
+            <div id="channel-result" class="key-value-list hidden" style="margin-top: 18px;">
+              <div class="key-value-item">
+                <span class="result-label">Status</span>
+                <strong id="channel-status"></strong>
+              </div>
+              <div class="metric-grid">
+                <div class="metric-card">
+                  <span>Actual Bit Flips</span>
+                  <strong id="flips-count">0</strong>
+                </div>
+                <div class="metric-card">
+                  <span>Corrected by ECC</span>
+                  <strong id="corrected-count">0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

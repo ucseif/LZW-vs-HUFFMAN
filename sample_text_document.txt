@@ -1,0 +1,15 @@
+Data compression is one of the main applications of information theory in computer science.
+This sample text document is written in normal language and contains different words, sentence lengths, and punctuation.
+The goal of this file is to behave like a realistic note, report fragment, or short technical document that a student may want to compress.
+
+LZW compression works by building a dictionary while reading the input from left to right.
+When the current pattern and the next symbol already exist in the dictionary, the algorithm keeps extending the current pattern.
+When the new combined pattern is not found, the algorithm outputs the code of the known pattern and then adds the new pattern to the dictionary.
+
+In practice, normal text files contain repeated letters, spaces, common words, and punctuation marks.
+However, the repetition is usually moderate rather than extreme.
+Because of that, the compression ratio for a normal text file is often useful, but not as dramatic as the ratio for highly repetitive data.
+
+This file is intentionally longer than a tiny classroom example so that testing is more realistic.
+It includes repeated terminology such as dictionary, compression, pattern, code, and input.
+It also includes enough variation to make it different from a purely repetitive file.
