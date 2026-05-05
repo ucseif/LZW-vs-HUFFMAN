@@ -91,48 +91,48 @@ The repository includes a modern Flask web application with:
 
 ```text
 InfoProject/
-│
-├── LZW/
-│   ├── lzw_compression/
-│   │   ├── main.py
-│   │   ├── text_compression.py
-│   │   ├── bitmap_file.py
-│   │   └── compressed_files/
-│   └── lzw_decompression/
-│       ├── main.py
-│       ├── text_decompression.py
-│       ├── bitmap_file.py
-│       └── decompressed_files/
-│
-├── Huffman/
-│   ├── huffman_compression/
-│   │   ├── main.py
-│   │   ├── text_compression.py
-│   │   ├── bitmap_file.py
-│   │   └── compressed_files/
-│   └── huffman_decompression/
-│       ├── main.py
-│       ├── text_decompression.py
-│       ├── bitmap_file.py
-│       └── decompressed_files/
-│
-├── webapp/
-│   ├── app.py
-│   ├── templates/
-│   │   ├── index.html
-│   │   ├── app.html
-│   │   └── comparison.html
-│   ├── static/
-│   │   ├── styles.css
-│   │   ├── app.js
-│   │   └── comparison.js
-│   ├── uploads/
-│   └── runtime/
-│
-├── sample_text_document.txt
-├── repetitive_data.txt
-├── sample_bitmap.bmp
-└── README.md
+|
+|-- LZW/
+|   |-- lzw_compression/
+|   |   |-- main.py
+|   |   |-- text_compression.py
+|   |   |-- bitmap_file.py
+|   |   `-- compressed_files/
+|   `-- lzw_decompression/
+|       |-- main.py
+|       |-- text_decompression.py
+|       |-- bitmap_file.py
+|       `-- decompressed_files/
+|
+|-- Huffman/
+|   |-- huffman_compression/
+|   |   |-- main.py
+|   |   |-- text_compression.py
+|   |   |-- bitmap_file.py
+|   |   `-- compressed_files/
+|   `-- huffman_decompression/
+|       |-- main.py
+|       |-- text_decompression.py
+|       |-- bitmap_file.py
+|       `-- decompressed_files/
+|
+|-- webapp/
+|   |-- app.py
+|   |-- templates/
+|   |   |-- index.html
+|   |   |-- app.html
+|   |   `-- comparison.html
+|   |-- static/
+|   |   |-- styles.css
+|   |   |-- app.js
+|   |   `-- comparison.js
+|   |-- uploads/
+|   `-- runtime/
+|
+|-- sample_text_document.txt
+|-- repetitive_data.txt
+|-- sample_bitmap.bmp
+`-- README.md
 ```
 
 ## Sample Files
@@ -145,7 +145,9 @@ The repository includes prepared files for testing:
 
 These represent the three required file types used in the project.
 
-## Running the Project
+## Compilation and Running
+
+This project is written in Python, so there is no separate compilation step like C or C++ projects. The required deliverable here is a clear explanation of how to install dependencies and run the application.
 
 ### Requirements
 
@@ -170,6 +172,17 @@ Then open:
 
 ```text
 http://127.0.0.1:8010
+```
+
+### Optional direct algorithm execution
+
+If needed, the algorithm modules can also be executed directly from their own folders:
+
+```bash
+python LZW/lzw_compression/main.py
+python LZW/lzw_decompression/main.py
+python Huffman/huffman_compression/main.py
+python Huffman/huffman_decompression/main.py
 ```
 
 ## Using the Web App
@@ -244,6 +257,18 @@ This feature was added at the web layer only and does not modify the internal al
 - The project separates compression and decompression logic into dedicated folders for clarity.
 - The UI is designed to present the project as both a functional tool and a polished academic demo.
 
+## Library Bypass Statement
+
+This project does not use ready-made compression libraries such as `gzip`, `zlib`, `lzma`, or similar shortcuts to perform the compression algorithms.
+
+The compression and decompression logic for both `LZW` and `Huffman` is implemented manually in Python, while standard libraries are used only for normal application tasks such as:
+
+- file handling
+- JSON serialization
+- timing
+- web routing
+- frontend integration
+
 ## Repository Notes
 
 - `__pycache__` folders are not part of the project logic
@@ -264,4 +289,3 @@ Possible future enhancements include:
 Project owner:
 
 - GitHub: [ucseif](https://github.com/ucseif)
-
