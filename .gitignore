@@ -11,8 +11,10 @@ Thumbs.db
 webapp/uploads/*
 webapp/runtime/*
 webapp/static/__pycache__/
+webapp/bonus_runtime/*
 !webapp/uploads/.gitkeep
 !webapp/runtime/.gitkeep
+!webapp/bonus_runtime/.gitkeep
 
 # Local compression output
 Huffman/huffman_compression/compressed_files/*

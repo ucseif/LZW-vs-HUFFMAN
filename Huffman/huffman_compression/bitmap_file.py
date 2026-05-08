@@ -132,28 +132,34 @@ def build_data_structure_efficiency(symbol_count):
     }
 
 
+import struct
+
 def save_compressed_file(file_path, result, frequencies, packed_bytes, padding_bits):
     output_folder = os.path.join(os.path.dirname(__file__), "compressed_files")
     os.makedirs(output_folder, exist_ok=True)
 
-    file_name = os.path.basename(file_path) + ".huff"
+    file_base = os.path.splitext(os.path.basename(file_path))[0]
+    file_name = file_base + ".huff"
     compressed_file_path = os.path.join(output_folder, file_name)
 
-    compressed_data = {
-        "algorithm": "Huffman",
-        "file_type": result["file_type"],
-        "original_file_path": file_path,
-        "original_extension": os.path.splitext(file_path)[1],
-        "original_length": result["stats"]["original_size_bytes"],
-        "frequencies": {str(symbol): count for symbol, count in frequencies.items()},
-        "padding_bits": padding_bits,
-        "packed_bytes": packed_bytes,
-    }
-
-    with open(compressed_file_path, "w", encoding="utf-8") as file:
-        json.dump(compressed_data, file)
+    magic = b"HF"
+    ext = os.path.splitext(file_path)[1].encode("utf-8")
+    ext_len = len(ext)
+    
+    with open(compressed_file_path, "wb") as file:
+        file.write(magic)
+        file.write(struct.pack("=B", padding_bits))
+        file.write(struct.pack("=H", len(frequencies)))
+        
+        for symbol, count in frequencies.items():
+            file.write(struct.pack("=BI", symbol, count))
+            
+        file.write(struct.pack("=B", ext_len))
+        file.write(ext)
+        file.write(bytes(packed_bytes))
 
     return compressed_file_path
+
 
 
 def compress_bitmap_file(file_path):
@@ -175,8 +181,6 @@ def compress_bitmap_file(file_path):
     execution_time = end_time - start_time
 
     original_size_bytes = len(file_bytes)
-    compressed_size_bytes = len(packed_bytes)
-    compression_ratio = original_size_bytes / compressed_size_bytes if compressed_size_bytes else 0
     memory_usage_bytes = estimate_memory_usage(frequencies, codes, packed_bytes)
 
     result = {
@@ -192,13 +196,14 @@ def compress_bitmap_file(file_path):
         ],
         "stats": {
             "original_size_bytes": original_size_bytes,
-            "compressed_size_bytes": compressed_size_bytes,
-            "compression_ratio": round(compression_ratio, 4),
+            "compressed_size_bytes": 0,
+            "compression_ratio": 0,
             "execution_time_seconds": round(execution_time, 6),
             "compression_speed_bytes_per_second": round(original_size_bytes / execution_time, 2) if execution_time else 0,
             "entropy_bits_per_symbol": calculate_entropy(file_bytes),
             "memory_usage_bytes": memory_usage_bytes,
             "padding_bits": padding_bits,
+            "packed_data_size_bytes": len(packed_bytes),
         },
         "data_structure_efficiency": build_data_structure_efficiency(len(frequencies)),
     }
@@ -210,6 +215,11 @@ def compress_bitmap_file(file_path):
         packed_bytes=packed_bytes,
         padding_bits=padding_bits,
     )
-    result["stats"]["saved_compressed_file_size_bytes"] = os.path.getsize(result["compressed_file_path"])
+    saved_file_size = os.path.getsize(result["compressed_file_path"])
+    result["stats"]["saved_compressed_file_size_bytes"] = saved_file_size
+    result["stats"]["compressed_size_bytes"] = saved_file_size
+    result["stats"]["compression_ratio"] = round(
+        original_size_bytes / saved_file_size, 4
+    ) if saved_file_size else 0
 
     return result

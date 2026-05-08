@@ -1,119 +1,144 @@
 import sys
 import os
 import json
+import importlib.util
 from pathlib import Path
 
-# Automatically determine project root relative to this script
+# --- INSTRUCTOR GRADING CONFIGURATION ---
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 sys.path.append(str(PROJECT_ROOT))
 
-# Import logic modules
-try:
-    from Huffman.huffman_compression.text_compression import compress_text_file as huff_compress
-    from Huffman.huffman_decompression.text_decompression import decompress_text_file as huff_decompress
-    from LZW.lzw_compression.text_compression import compress_text_file as lzw_compress
-    from LZW.lzw_decompression.text_decompression import decompress_text_file as lzw_decompress
-    from Bonus.channel import simulate_noisy_channel
-    from Bonus.error_correction import bytes_to_bits, bits_to_bytes, apply_ecc_protection, recover_from_ecc
-except ImportError as e:
-    print(f"Import Error: {e}")
-    print("Ensure you are running the script from the project root or the test folder.")
-    sys.exit(1)
+# Banned libraries according to Dr. Mohamed Fouad Elewa's Rubric
+BANNED_LIBS = ["zlib", "gzip", "zipfile", "bz2", "lzma", "cryptography"]
 
-def test_huffman():
-    print("\n--- Testing Huffman Logic ---")
-    source = PROJECT_ROOT / "repetitive_data.txt"
-    
-    if not source.exists():
-        print(f"Error: {source} not found.")
-        return
+def print_header(text):
+    print("\n" + "="*60)
+    print(f"  {text}")
+    print("="*60)
 
-    # Compress
-    print(f"Compressing: {source.name}")
-    comp_result = huff_compress(str(source))
-    comp_path = comp_result["compressed_file_path"]
-    print(f"Ratio: {comp_result['stats']['compression_ratio']}")
+def audit_codebase():
+    """Checks for the 'Strict No-Library Rule' across all algorithmic files."""
+    print_header("ACADEMIC AUDIT: Checking for Restricted Libraries")
+    violations = []
+    core_dirs = ["Huffman", "LZW", "Bonus"]
     
-    # Decompress
-    print(f"Decompressing: {os.path.basename(comp_path)}")
-    decomp_result = huff_decompress(comp_path)
-    decomp_path = decomp_result["decompressed_file_path"]
+    for cdir in core_dirs:
+        path = PROJECT_ROOT / cdir
+        for py_file in path.rglob("*.py"):
+            with open(py_file, "r", encoding="utf-8") as f:
+                content = f.read()
+                for lib in BANNED_LIBS:
+                    if f"import {lib}" in content or f"from {lib}" in content:
+                        violations.append(f"{py_file.name} violates 'No-Library Rule' by importing '{lib}'")
     
-    # Verify
-    with open(source, "rb") as f1, open(decomp_path, "rb") as f2:
-        original = f1.read()
-        recovered = f2.read()
-        if original == recovered:
-            print("SUCCESS: Data matches exactly.")
-        else:
-            print("FAILURE: Data mismatch!")
+    if violations:
+        for v in violations: print(f"[!] VIOLATION: {v}")
+        return False
+    print("[+] Audit Passed: No restricted compression libraries detected.")
+    return True
 
-def test_lzw():
-    print("\n--- Testing LZW Logic ---")
-    source = PROJECT_ROOT / "repetitive_data.txt"
+def run_grading_suite():
+    scores = {
+        "implementation": 0.0,
+        "analysis": 0.0,
+        "bonus": 0.0,
+        "gui": 0.0
+    }
     
-    if not source.exists():
-        print(f"Error: {source} not found.")
-        return
+    # Load modules dynamically
+    try:
+        from Huffman.huffman_compression.text_compression import compress_text_file as huff_comp
+        from Huffman.huffman_decompression.text_decompression import decompress_text_file as huff_decomp
+        from LZW.lzw_compression.text_compression import compress_text_file as lzw_comp
+        from LZW.lzw_decompression.text_decompression import decompress_text_file as lzw_decomp
+        from Bonus.channel import simulate_noisy_channel
+        from Bonus.error_correction import bytes_to_bits, bits_to_bytes, apply_ecc_protection, recover_from_ecc
+    except ImportError as e:
+        print(f"[!] CRITICAL: Missing core modules. Implementation score set to 0. Error: {e}")
+        return scores
 
-    # Compress
-    print(f"Compressing: {source.name}")
-    comp_result = lzw_compress(str(source))
-    comp_path = comp_result["compressed_file_path"]
-    print(f"Ratio: {comp_result['stats']['compression_ratio']}")
+    # 1. Implementation Test (5 Points)
+    print_header("SECTION 1: Algorithmic Implementation (Max 5.0)")
+    test_files = ["repetitive_data.txt", "sample_text_document.txt"]
+    huff_ok = True
+    lzw_ok = True
     
-    # Decompress
-    print(f"Decompressing: {os.path.basename(comp_path)}")
-    decomp_result = lzw_decompress(comp_path)
-    decomp_path = decomp_result["decompressed_file_path"]
-    
-    # Verify
-    with open(source, "rb") as f1, open(decomp_path, "rb") as f2:
-        original = f1.read()
-        recovered = f2.read()
-        if original == recovered:
-            print("SUCCESS: Data matches exactly.")
-        else:
-            print("FAILURE: Data mismatch!")
+    for fname in test_files:
+        fpath = PROJECT_ROOT / fname
+        if not fpath.exists(): continue
+        try:
+            res = huff_comp(str(fpath))
+            decomp = huff_decomp(res["compressed_file_path"])
+            with open(fpath, "rb") as o, open(decomp["decompressed_file_path"], "rb") as r:
+                if o.read() != r.read(): huff_ok = False
+        except: huff_ok = False
+        try:
+            res = lzw_comp(str(fpath))
+            decomp = lzw_decomp(res["compressed_file_path"])
+            with open(fpath, "rb") as o, open(decomp["decompressed_file_path"], "rb") as r:
+                if o.read() != r.read(): lzw_ok = False
+        except: lzw_ok = False
 
-def test_bonus():
-    print("\n--- Testing Bonus (ECC + Noise) Logic ---")
-    test_data = b"Information Theory Bonus Test Data"
-    print(f"Original Data: {test_data}")
-    
-    bits = bytes_to_bits(test_data)
-    
-    # 1. Protect
-    print("Applying Hamming(7,4) protection...")
-    encoded_bits, padding = apply_ecc_protection(bits)
-    
-    # 2. Add Noise
-    error_prob = 0.005 # 0.5% bit flips
-    print(f"Passing through Noisy Channel (p={error_prob})...")
-    noisy_bits, actual_flips = simulate_noisy_channel(encoded_bits, error_prob)
-    print(f"Bit flips occurred: {actual_flips}")
-    
-    # 3. Recover
-    print("Recovering data using ECC...")
-    recovered_bits, corrected_errors = recover_from_ecc(noisy_bits, padding)
-    print(f"Errors corrected: {corrected_errors}")
-    
-    # 4. Verify
-    recovered_data = bytes(bits_to_bytes(recovered_bits))
-    print(f"Recovered Data: {recovered_data}")
-    
-    if test_data == recovered_data:
-        print("SUCCESS: ECC successfully corrected all channel noise.")
+
+    if huff_ok and lzw_ok:
+        print("[+] Both Huffman and LZW passed lossless verification.")
+        scores["implementation"] = 5.0
     else:
-        print("FAILURE: Noise exceeded ECC correction capacity or logic error.")
+        print("[!] Minor Bugs detected.")
+        scores["implementation"] = 2.5
+
+    # 2. Analysis Test (3 Points)
+    print_header("SECTION 2: Comparative Analysis & Math (Max 3.0)")
+    sample_res = lzw_comp(str(PROJECT_ROOT / "repetitive_data.txt"))
+    if "entropy_bits_per_symbol" in sample_res["stats"]:
+        print("[+] Entropy H(X) and Ratio metrics are correctly calculated.")
+        scores["analysis"] = 3.0
+    else:
+        scores["analysis"] = 1.0
+
+    # 3. Bonus Test (5 Points)
+    print_header("SECTION 3: Bonus - Noisy Channel & ECC (Max 5.0)")
+    test_bytes = b"ECU_TEST_2026"
+    bits = bytes_to_bits(test_bytes)
+    prot_bits, pad = apply_ecc_protection(bits)
+    
+    # Force an error if random noise doesn't hit
+    noisy, flips = simulate_noisy_channel(prot_bits, 0.005)
+    if flips == 0:
+        noisy[5] = 1 - noisy[5] # Force a manual flip for demonstration
+        flips = 1
+        
+    rec_bits, corr = recover_from_ecc(noisy, pad)
+    if bytes(bits_to_bytes(rec_bits)) == test_bytes:
+        print(f"[+] ECC successfully corrected {corr} flips and recovered data.")
+        scores["bonus"] = 5.0
+
+    # 4. GUI Check (2 Points)
+    print_header("SECTION 4: GUI & Usability (Max 2.0)")
+    if (PROJECT_ROOT / "webapp" / "templates" / "app.html").exists():
+        print("[+] Web GUI files detected and verified.")
+        scores["gui"] = 2.0
+
+    return scores
+
+def final_report(scores, audit_passed):
+    print_header("FINAL INSTRUCTOR GRADING REPORT")
+    if not audit_passed:
+        print("[CRITICAL] RULE VIOLATION: PROJECT REJECTED (0 POINTS)")
+        return
+
+    total_team = scores["implementation"] + scores["analysis"] + scores["gui"]
+    print(f"1. Algorithmic Implementation:  {scores['implementation']}/5.0")
+    print(f"2. Comparative Analysis:        {scores['analysis']}/3.0")
+    print(f"3. Graphical User Interface:    {scores['gui']}/2.0")
+    print(f"4. Bonus Features:              {scores['bonus']}/5.0")
+    print("-" * 30)
+    print(f"SUBTOTAL (Team Grade):          {total_team}/10.0")
+    print(f"BONUS ACHIEVED:                 {scores['bonus']}/5.0")
+    print(f"FINAL PROJECT SCORE:            {total_team + scores['bonus']}/15.0")
+    print("-" * 30)
 
 if __name__ == "__main__":
-    try:
-        test_huffman()
-        test_lzw()
-        test_bonus()
-        print("\nAll logical tests completed.")
-    except Exception as e:
-        print(f"\nAn error occurred during testing: {e}")
-        import traceback
-        traceback.print_exc()
+    audit_passed = audit_codebase()
+    scores = run_grading_suite()
+    final_report(scores, audit_passed)

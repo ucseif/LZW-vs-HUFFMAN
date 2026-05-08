@@ -25,6 +25,7 @@ const fileContentDisplay = document.getElementById("file-content-display");
 const previewTitle = document.getElementById("preview-title");
 
 let currentCompressedFilePath = "";
+let currentOriginalFilePath = "";
 
 if (fileInput) {
   fileInput.addEventListener("change", () => {
@@ -134,8 +135,10 @@ if (simulateBtn) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           file_path: currentCompressedFilePath,
+          original_path: currentOriginalFilePath,
           error_probability: parseFloat(errorProbSlider.value)
         }),
+
       });
 
       const data = await response.json();
@@ -148,6 +151,20 @@ if (simulateBtn) {
       }
       if (flipsCount) flipsCount.textContent = data.stats.actual_flips;
       if (correctedCount) correctedCount.textContent = data.stats.corrected_errors;
+      
+      if (data.files) {
+        const bonusFiles = document.getElementById("bonus-files");
+        if (bonusFiles) bonusFiles.style.display = "block";
+        
+        const linkP = document.getElementById("link-protected");
+        const linkC = document.getElementById("link-corrupted");
+        const linkR = document.getElementById("link-repaired");
+        
+        if (linkP) linkP.href = `/download?path=${encodeURIComponent(data.files.protected)}`;
+        if (linkC) linkC.href = `/download?path=${encodeURIComponent(data.files.corrupted)}`;
+        if (linkR) linkR.href = `/download?path=${encodeURIComponent(data.files.repaired)}`;
+      }
+
       
     } catch (error) {
       alert(error.message);
@@ -177,8 +194,10 @@ if (form) {
         throw new Error(data.error || "Processing failed");
       }
 
+      currentOriginalFilePath = data.primary.file_path || "";
       renderResult(data.primary, data.comparison_url);
     } catch (error) {
+
       alert(error.message);
     } finally {
       submitButton.disabled = false;

@@ -148,10 +148,12 @@ def summarize_result(result, operation, algorithm_key):
         "algorithm": ALGORITHMS[algorithm_key]["label"],
         "operation": operation,
         "file_type": result.get("file_type", ""),
+        "file_path": result.get("file_path", ""),
         "stats": result.get("stats", {}),
         "data_structure_efficiency": result.get("data_structure_efficiency", {}),
         "download": build_download_info(result, operation),
     }
+
 
     if operation == "compress":
         summary["preview"] = {
@@ -281,37 +283,61 @@ def download_file():
 def simulate_channel():
     data = request.json
     file_path = Path(data.get("file_path", ""))
+    original_path = Path(data.get("original_path", ""))
     error_prob = float(data.get("error_probability", 0.01))
     
-    if not file_path.exists():
-        return jsonify({"error": "Compressed file not found"}), 404
-        
-    with open(file_path, "rb") as f:
-        # For simplicity in the demo, we read the JSON-based compressed file
-        # and extract the 'packed_bytes' (for Huffman) or 'codes' (for LZW)
-        comp_data = json.load(f)
+    # Use original path for "Human Readable" demonstration if it's available
+    target_path = original_path if (data.get("original_path") and original_path.exists()) else file_path
+
     
-    # We'll treat the entire compressed JSON string as the data to be protected
-    # to demonstrate end-to-end recovery of the archive itself
-    with open(file_path, "rb") as f:
+    if not target_path.exists():
+        return jsonify({"error": "File not found"}), 404
+        
+    # Create a directory for bonus file stages
+    bonus_dir = Path(__file__).parent / "bonus_runtime"
+    bonus_dir.mkdir(exist_ok=True)
+    
+    with open(target_path, "rb") as f:
         raw_bytes = f.read()
+
     
     bits = ecc_module.bytes_to_bits(raw_bytes)
     
-    # 1. Protect with ECC
+    # 1. Original Text (Before Noise)
+    original_text = "".join([chr(b) if 32 <= b <= 126 else "?" for b in raw_bytes])
+    original_path = bonus_dir / "1_original_text.txt"
+    with open(original_path, "w", encoding="utf-8") as f:
+        f.write(original_text)
+
+    # Encode for channel
     encoded_bits, padding = ecc_module.apply_ecc_protection(bits)
     
-    # 2. Pass through Noisy Channel
+    # Simulate Noise
     noisy_bits, actual_flips = channel_module.simulate_noisy_channel(encoded_bits, error_prob)
+
+    # 2. Corrupted Text (After Noise)
+    corrupted_data_bits = []
+    for i in range(0, len(noisy_bits), 7):
+        chunk = noisy_bits[i:i+7]
+        if len(chunk) == 7:
+            corrupted_data_bits.extend([chunk[2], chunk[4], chunk[5], chunk[6]])
+    if padding:
+        corrupted_data_bits = corrupted_data_bits[:-padding]
+    corrupted_bytes = ecc_module.bits_to_bytes(corrupted_data_bits)
+    corrupted_text = "".join([chr(b) if 32 <= b <= 126 else "?" for b in corrupted_bytes])
+    corrupted_path = bonus_dir / "2_corrupted_text.txt"
+    with open(corrupted_path, "w", encoding="utf-8") as f:
+        f.write(corrupted_text)
     
-    # 3. Recover with ECC
+    # 3. Repaired Text (After ECC)
     recovered_bits, corrected_errors = ecc_module.recover_from_ecc(noisy_bits, padding)
-    
-    # 4. Check integrity
     success = recovered_bits == bits
     recovered_bytes = ecc_module.bits_to_bytes(recovered_bits)
+    repaired_text = "".join([chr(b) if 32 <= b <= 126 else "?" for b in recovered_bytes])
+    repaired_path = bonus_dir / "3_repaired_text.txt"
+    with open(repaired_path, "w", encoding="utf-8") as f:
+        f.write(repaired_text)
     
-    # We don't save the recovered file here, just report stats
     return jsonify({
         "success": success,
         "stats": {
@@ -320,9 +346,18 @@ def simulate_channel():
             "actual_flips": actual_flips,
             "corrected_errors": corrected_errors,
             "integrity_maintained": success
+        },
+        "files": {
+            "protected": str(original_path),
+            "corrupted": str(corrupted_path),
+            "repaired": str(repaired_path)
         }
     })
 
 
+
+
+
+
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8011, debug=True)
+    app.run(host="127.0.0.1", port=8010, debug=False)

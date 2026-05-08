@@ -95,15 +95,26 @@ def build_data_structure_efficiency(symbol_count):
     }
 
 
-def decompress_bitmap_file(file_path):
-    with open(file_path, "r", encoding="utf-8") as file:
-        compressed_data = json.load(file)
+import struct
 
-    frequencies = {int(symbol): count for symbol, count in compressed_data.get("frequencies", {}).items()}
-    packed_bytes = compressed_data.get("packed_bytes", [])
-    padding_bits = compressed_data.get("padding_bits", 0)
-    original_extension = compressed_data.get("original_extension", ".bmp")
-    original_length = compressed_data.get("original_length", 0)
+def decompress_bitmap_file(file_path):
+    with open(file_path, "rb") as file:
+        magic = file.read(2)
+        if magic != b"HF":
+
+            return build_empty_result(file_path)
+            
+        padding_bits = struct.unpack("=B", file.read(1))[0]
+        freq_size = struct.unpack("=H", file.read(2))[0]
+        
+        frequencies = {}
+        for _ in range(freq_size):
+            symbol, count = struct.unpack("=BI", file.read(5))
+            frequencies[symbol] = count
+            
+        ext_len = struct.unpack("=B", file.read(1))[0]
+        original_extension = file.read(ext_len).decode("utf-8")
+        packed_bytes = list(file.read())
 
     if not packed_bytes and not frequencies:
         return build_empty_result(file_path)
@@ -114,7 +125,9 @@ def decompress_bitmap_file(file_path):
     output_bytes = bytearray()
 
     if tree.left is None and tree.right is None:
+        original_length = sum(frequencies.values())
         output_bytes.extend([tree.symbol] * original_length)
+
     else:
         bit_string = unpack_bits(packed_bytes, padding_bits)
         current = tree
