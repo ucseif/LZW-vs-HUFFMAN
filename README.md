@@ -44,7 +44,8 @@ In this project, LZW:
 - builds and expands a dictionary during processing
 - works on general file input
 - supports both compression and decompression
-- stores compressed output in `.lzw` files
+- stores compressed output in custom binary `.lzw` files
+- packs dictionary codes using a fixed 12-bit container format
 
 ### 2. Huffman
 
@@ -56,7 +57,8 @@ In this project, Huffman:
 - builds a Huffman tree
 - generates binary codes for symbols
 - supports both compression and decompression
-- stores compressed output in `.huff` files
+- stores compressed output in custom binary `.huff` files
+- packs the encoded bit stream into bytes with saved padding metadata
 
 ## Required Comparative Analysis
 
@@ -70,6 +72,12 @@ The project includes the metrics required for the course comparison:
 - notes about `Data Structure Efficiency`
 
 These results are available through the backend logic and displayed through the web interface.
+
+Important note:
+
+- `compressed_size_bytes` now refers to the actual saved compressed file size
+- `saved_compressed_file_size_bytes` stores the same real output file size explicitly
+- internal packed payload size is also available in some algorithm outputs as `packed_data_size_bytes`
 
 ## Web Interface
 
@@ -216,6 +224,14 @@ Generated compressed files are stored in algorithm-specific folders:
 - `LZW/lzw_compression/compressed_files/`
 - `Huffman/huffman_compression/compressed_files/`
 
+These are real binary compressed containers:
+
+- `.lzw` for LZW
+- `.huff` for Huffman
+
+They are no longer plain JSON dumps of algorithm output.
+Each compressed file now contains packed compressed data plus a small header that stores the metadata required for decompression.
+
 Generated decompressed files are stored in:
 
 - `LZW/lzw_decompression/decompressed_files/`
@@ -225,6 +241,7 @@ Temporary web runtime files are stored in:
 
 - `webapp/uploads/`
 - `webapp/runtime/`
+- `webapp/bonus_runtime/`
 
 These runtime folders are intentionally excluded from Git except for `.gitkeep`.
 
@@ -256,6 +273,7 @@ This feature was added at the web layer only and does not modify the internal al
 - The algorithms are implemented manually and do not rely on ready-made compression libraries.
 - The project separates compression and decompression logic into dedicated folders for clarity.
 - The UI is designed to present the project as both a functional tool and a polished academic demo.
+- The latest version stores compressed outputs as binary containers instead of plain text JSON representations.
 
 ## Library Bypass Statement
 
